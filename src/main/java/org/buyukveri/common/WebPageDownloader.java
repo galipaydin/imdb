@@ -5,9 +5,12 @@
  */
 package org.buyukveri.common;
 
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
@@ -32,7 +35,7 @@ public class WebPageDownloader {
             Document doc = response.parse();
             return doc;
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println("WebPageDownloader:getPage - "+ e.getMessage());
             return null;
         }
 //        finally {
@@ -59,7 +62,26 @@ public class WebPageDownloader {
         }
 
     }
+    
+    public static void saveImage(String imageURL, String filePath) {
+        try {
+            File resimFile = new File(filePath);
 
+            if (imageURL.trim().length() > 20) {
+                if (!resimFile.exists()) {
+                    try (InputStream in = new java.net.URL(imageURL).openStream();
+                            OutputStream out = new BufferedOutputStream(new FileOutputStream(filePath))) {
+                        for (int b; (b = in.read()) != -1;) {
+                            out.write(b);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+    }
     public static void main(String[] args) {
 //        WebPageDownloader.getFile("/Users/galip/NetBeansProjects/NewsDownloader/src/main/resources/commentspage.html");
       Document doc =  WebPageDownloader.getPage("http://finans.mynet.com/haber/detay/borsa/yatirimciya-kirmizi-bayrakli-uyari/334/");

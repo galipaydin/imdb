@@ -5,12 +5,10 @@
  */
 package org.buyukveri.imdb;
 
-import java.io.FileWriter;
-import java.util.Calendar;
-import org.buyukveri.common.WebPageDownloader;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+import java.io.File;
+import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  *
@@ -18,64 +16,60 @@ import org.jsoup.select.Elements;
  */
 public class PhotoDownloader {
 
-    public void linker() {
+    public void processLinkFolder(String linkFilesFolder, String outputFolder) {
         try {
-            String path = "/Users/galip/dev/data/imdb/links";
-                        
-            Calendar calendar = Calendar.getInstance();
-            calendar.set(Calendar.YEAR, 2017);
-            for (int j = 0; j < 12; j++) {
-                calendar.set(Calendar.MONTH, j);
-                int daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-                for (int k = 1; k <= daysInMonth; k++) {
-                    FileWriter fw = new FileWriter(path + "/" + (j+1) + "_" + k + ".txt", true);
-                    String day = k + "", month = j + 1 + "";
-                    boolean check = true;
-                    if (check) {
-                        for (int i = 1; i < 10000; i += 50) {
-                            String link = "http://www.imdb.com/search/name?sort=alpha&birth_monthday=" + month + "-" + day
-                                    + "&start=" + i;
-                            System.out.println(link);
+            File f = new File(linkFilesFolder);
+            if (f.isDirectory()) {
+                File[] files = f.listFiles();
+                for (File file : files) {
+                    readLinkFile(file, outputFolder);
+                }
+            }
+        } catch (Exception e) {
+        }
+    }
 
-                            Document doc = WebPageDownloader.getPage(link);
+    public void readLinkFile(File inputFile, String outputPath) {
+        try {
+            String filename = inputFile.getName();
 
-                            Elements results = doc.getElementsByAttributeValue("class", "results");
-                            Element result = results.first();
-//                        
-                            Elements names = result.getElementsByAttributeValue("class", "image");
-                            System.out.println(names.size());
-                            if (names.size() > 0) {
-                                for (Element name : names) {
-//                        System.out.println(name);
-                                    Element e = name.getElementsByTag("a").first();
-                                    String url = e.attr("href");
-                                     
-                                    String person = e.attr("title");
-                                    
-                                    Element imge = e.getElementsByTag("img").first();
-                                    String imglink = imge.attr("src");
-                                    
-                                     String line = person + ";" + url  + ";" ;
-                                    
-                                    if(imglink.endsWith("name.gif"))
-                                       line = line + "0";
-                                    else 
-                                        line = line + "1";
-                                    System.out.println(line);
-                                    fw.write(line+"\n");
-                                    fw.flush();
-                                    
-                                }
-                            } else {
-                                check = false;
-                                break;
-                            }
+            File f = new File(outputPath);
+            if (!f.exists()) {
+                f.mkdirs();
+            }
+
+            ExecutorService executor = Executors.newFixedThreadPool(5);
+
+//            String path = outputPath + "/" + filename;
+            Scanner s = new Scanner(inputFile);
+            int count = 0;
+
+            while (s.hasNext()) {
+                String line = s.nextLine();
+                String[] tokens = line.split(";");
+                if (tokens.length > 2) {
+                    String name = tokens[0];
+                    String url = "http://www.imdb.com" + tokens[1];
+                    String hasPic = tokens[2];
+
+                    if (hasPic.equals("1")) {
+                        Runnable worker = new DownloaderThread(url, outputPath, filename);
+                        executor.execute(worker);
+                        count++;
+                        if (count == 10) {
+                            System.out.println("Sleep");
+                            Thread.sleep(10000);
+                            count = 0;
                         }
                     }
-                    fw.close();
                 }
             }
 
+            executor.shutdown();
+
+            while (!executor.isTerminated()) {
+            }
+            System.out.println("Finished all threads");
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -83,6 +77,6 @@ public class PhotoDownloader {
 
     public static void main(String[] args) {
         PhotoDownloader p = new PhotoDownloader();
-        p.linker();
+        p.processLinkFolder("/Users/galip/dev/data/imdb/links", "/Users/galip/dev/data/imdb/pics");
     }
 }
