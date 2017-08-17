@@ -7,7 +7,6 @@ package org.buyukveri.imdb;
 
 import java.io.File;
 import java.io.FileWriter;
-import org.buyukveri.common.TextCleaner;
 import org.buyukveri.common.WebPageDownloader;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -53,9 +52,17 @@ public class DownloaderThread implements Runnable {
             
             Element type = div.getElementsByAttributeValue("itemprop", "jobtitle").first();
             String fm = type.text();
+            fm = fm.replaceAll(" ", "_");
+            String path = outputPath + "/" + fm.toLowerCase();
             
+            File f = new File(path);
+            if (!f.exists()) {
+                f.mkdirs();
+            }
+
+
 //            System.out.println(fm);
-            WebPageDownloader.saveImage(src, outputPath + "/" + fm.toLowerCase() + "/" + name + ".jpg");
+            WebPageDownloader.saveImage(src, path + "/" + name + ".jpg");
             
 //            FileWriter fw = new FileWriter(outputPath + "/" + cat + ".txt", true);
 //            fw.write(date + ";&" + haber + "\n");
