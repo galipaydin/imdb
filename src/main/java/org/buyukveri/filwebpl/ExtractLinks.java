@@ -36,7 +36,7 @@ public class ExtractLinks {
                 file.mkdirs();
             }
 
-            for (int i = 1; i < 60277; i++) {
+            for (int i = 60275; i < 60277; i++) {
                 String url = "http://www.filmweb.pl/search/person?&q=&sex=1&sort=COUNT&sortAscending=false&page=" + i;
 
                 Document doc = WebPageDownloader.getPage(url);
@@ -53,9 +53,10 @@ public class ExtractLinks {
                     Element img = hi.getElementsByTag("img").first();
 
                     String imgLink = img.attr("src");
-                    WebPageDownloader.saveImage(imgLink, filePath + "/train/" + name + ".jpg");
-
-                    personImages("http://www.filmweb.pl" + link, name);
+                    if (!imgLink.endsWith("plug.svg")) {
+                        WebPageDownloader.saveImage(imgLink, filePath + "/train/" + name + ".jpg");
+                        personImages("http://www.filmweb.pl" + link, name);
+                    }
                 }
 
 //                for (Element e : es) {
@@ -82,17 +83,20 @@ public class ExtractLinks {
     public void personImages(String link, String name) {
         try {
             Document doc = WebPageDownloader.getPage(link);
-            Element pp = doc.getElementsByAttributeValue("class", "person-photos").first();
-            Elements photos = pp.getElementsByAttributeValue("class", "photo");
-            int cnt = 1;
-            for (Element photo : photos) {
-                Element a = photo.getElementsByTag("a").first().getElementsByTag("img").first();
-                String imglink = a.attr("src");
+            Elements pp1 = doc.getElementsByAttributeValue("class", "person-photos");
+            if (pp1.size() > 0) {
+                Element pp = pp1.first();
+                Elements photos = pp.getElementsByAttributeValue("class", "photo");
+                int cnt = 1;
+                for (Element photo : photos) {
+                    Element a = photo.getElementsByTag("a").first().getElementsByTag("img").first();
+                    String imglink = a.attr("src");
 //                System.out.println("\t" + imglink);
-                String fileName = name + "_" + cnt + ".jpg";
+                    String fileName = name + "_" + cnt + ".jpg";
 
-                WebPageDownloader.saveImage(imglink, filePath + "/test/" +  fileName);
-                cnt++;
+                    WebPageDownloader.saveImage(imglink, filePath + "/test/" + fileName);
+                    cnt++;
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
