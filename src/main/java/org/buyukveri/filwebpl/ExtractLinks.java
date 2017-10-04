@@ -6,6 +6,7 @@
 package org.buyukveri.filwebpl;
 
 import java.io.File;
+import java.io.FileWriter;
 import org.buyukveri.common.WebPageDownloader;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -18,25 +19,31 @@ import org.jsoup.select.Elements;
 public class ExtractLinks {
 
     String filePath = "/Users/galip/dev/data/faces/filwebpl/female/";
+    FileWriter testlinksfw, trainlinksfw, errorfw;
 
     public void links() {
+        String imgLink = "";
+
         try {
+            trainlinksfw = new FileWriter(filePath + "/trainlinks.txt");
+            testlinksfw = new FileWriter(filePath + "/testlinks.txt");
+            errorfw = new FileWriter(filePath + "/errors.txt");
             File file = new File(filePath);
             if (!file.exists()) {
                 file.mkdirs();
             }
 
-            file = new File("/Users/galip/dev/data/faces/filwebpl/female/test/");
+            file = new File(filePath + "/test/");
             if (!file.exists()) {
                 file.mkdirs();
             }
 
-            file = new File("/Users/galip/dev/data/faces/filwebpl/female/train/");
+            file = new File(filePath + "/train/");
             if (!file.exists()) {
                 file.mkdirs();
             }
 
-            for (int i = 60275; i < 60277; i++) {
+            for (int i = 1; i < 60582; i++) {
                 String url = "http://www.filmweb.pl/search/person?&q=&sex=1&sort=COUNT&sortAscending=false&page=" + i;
 
                 Document doc = WebPageDownloader.getPage(url);
@@ -52,35 +59,32 @@ public class ExtractLinks {
 //                    System.out.println(name);
                     Element img = hi.getElementsByTag("img").first();
 
-                    String imgLink = img.attr("src");
+                    imgLink = img.attr("src");
                     if (!imgLink.endsWith("plug.svg")) {
+                        trainlinksfw.write(name + ".jpg" + ";" + imgLink + "\n");
+                        trainlinksfw.flush();
                         WebPageDownloader.saveImage(imgLink, filePath + "/train/" + name + ".jpg");
                         personImages("http://www.filmweb.pl" + link, name);
                     }
                 }
-
-//                for (Element e : es) {
-//                    Element e1 = e.getElementsByAttributeValue("class", "hitDescWrapper").first();
-//
-//                    Element imgel = e1. getElementsByTag("a").first();
-//                    String link = imgel.attr("href");
-//                    System.out.println(link);
-//                    Element hitImg = doc.getElementsByAttributeValue("class", "hitImage").first();
-//                    Element img = hitImg.getElementsByTag("img").first();
-//                    String imgLink = img.attr("src");
-//                    
-//                    System.out.println(imgLink);
-//            
-//                }
             }
-
+            trainlinksfw.close();
+            testlinksfw.close();
+            errorfw.close();
         } catch (Exception e) {
+            try {
+                errorfw.write(imgLink + "\n");
+                errorfw.flush();
+            } catch (Exception e1) {
+            }
+            
             System.out.println(e.getMessage());
             e.printStackTrace();
         }
     }
 
     public void personImages(String link, String name) {
+        String imglink = "";   
         try {
             Document doc = WebPageDownloader.getPage(link);
             Elements pp1 = doc.getElementsByAttributeValue("class", "person-photos");
@@ -90,15 +94,23 @@ public class ExtractLinks {
                 int cnt = 1;
                 for (Element photo : photos) {
                     Element a = photo.getElementsByTag("a").first().getElementsByTag("img").first();
-                    String imglink = a.attr("src");
+                    imglink = a.attr("src");
 //                System.out.println("\t" + imglink);
                     String fileName = name + "_" + cnt + ".jpg";
 
+                    testlinksfw.write(fileName + ";" + imglink + "\n");
+                    testlinksfw.flush();
                     WebPageDownloader.saveImage(imglink, filePath + "/test/" + fileName);
                     cnt++;
                 }
             }
         } catch (Exception e) {
+            try {
+                errorfw.write(imglink + "\n");
+                errorfw.flush();
+            } catch (Exception e1) {
+            }
+            
             e.printStackTrace();
         }
     }
