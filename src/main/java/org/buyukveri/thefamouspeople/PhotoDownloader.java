@@ -22,13 +22,13 @@ public class PhotoDownloader {
 
     public void download() {
         try {
-//            String type = "actor";
-//            String link = "http://www.thefamouspeople.com/actors.php";
+            String type = "actor";
+            String link = "http://www.thefamouspeople.com/actors.php";
 
-            String type = "actress";
-            String link = "http://www.thefamouspeople.com/actress.php";
+//            String type = "actress";
+//            String link = "http://www.thefamouspeople.com/actress.php";
 
-            for (int i = 1; i < 8; i++) {
+            for (int i = 1; i < 10; i++) {
                 System.out.println("PAGE=" + i);
                 Document doc = WebPageDownloader.getPage(link + "?page=" + i);
                 Elements tiles = doc.getElementsByAttributeValue("class", "tile");

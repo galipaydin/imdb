@@ -11,15 +11,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-/**
- *
- * @author galip
- */
 public class LinkExtractor {
 
     public void links() {
         try {
-
             for (int i = 1; i < 960; i++) {
                 String url = "https://www.themoviedb.org/person?page=" + i;
 

@@ -28,15 +28,18 @@ public class ExtractLinks {
                 calendar.set(Calendar.MONTH, j);
                 int daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
                 for (int k = 1; k <= daysInMonth; k++) {
+                    System.out.println("Month: " + j +" Day:" + k);
                     FileWriter fw0 = new FileWriter(path + "/" + (j + 1) + "_" + k + "_0.txt", true);
                     FileWriter fw1 = new FileWriter(path + "/" + (j + 1) + "_" + k + "_1.txt", true);
                     String day = k + "", month = j + 1 + "";
                     boolean check = true;
                     if (check) {
+                        int count =0;
                         for (int i = 1; i < 10000; i += 50) {
+                           
                             String link = "http://www.imdb.com/search/name?sort=alpha&birth_monthday=" + month + "-" + day
                                     + "&start=" + i;
-                            System.out.println(link);
+//                            System.out.println(link);
 
                             Document doc = WebPageDownloader.getPage(link);
                             if (doc != null) {
@@ -44,9 +47,10 @@ public class ExtractLinks {
                                 Element result = results.first();
 //                        
                                 Elements names = result.getElementsByAttributeValue("class", "image");
-                                System.out.println(names.size());
+
                                 if (names.size() > 0) {
                                     for (Element name : names) {
+                                        count++;
 //                        System.out.println(name);
                                         Element e = name.getElementsByTag("a").first();
                                         String url = e.attr("href");
@@ -76,6 +80,7 @@ public class ExtractLinks {
                                 }
                             }
                         }
+                        System.out.println("\t" + count);
                         fw0.close();
                         fw1.close();
                     }
