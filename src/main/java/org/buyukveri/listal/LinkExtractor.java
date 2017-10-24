@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.buyukveri.listal;
 
 import java.io.File;
@@ -11,22 +6,18 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-/**
- *
- * @author galip
- */
 public class LinkExtractor {
 
     public void links() {
         try {
-            String filePath = "/Users/galip/dev/data/faces/listal/male/";
+            String filePath = "/Users/galip/dev/data/faces/listal/female/";
             File file = new File(filePath);
             if (!file.exists()) {
                 file.mkdirs();
             }
 
-            for (int i = 1; i < 275; i++) {
-                String url = "http://www.listal.com/actors/actor/" + i;
+            for (int i = 1; i < 361; i++) {
+                String url = "http://www.listal.com/actors/actress/" + i;
 
                 Document doc = WebPageDownloader.getPage(url);
                 Elements es = doc.getElementsByAttributeValue("class", "gridviewimage");
