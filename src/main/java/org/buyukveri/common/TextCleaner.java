@@ -1,13 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.buyukveri.common;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -55,17 +51,30 @@ public class TextCleaner {
         return str;
     }
 
-    public static String word2vecCleaner(String text) {
+    public String word2vecCleaner(String text) {
         try {
             text = text.trim();
-            text = text.replaceAll("\\d.\\d", ""); //replace 15.5 with 1
+            text = text.toLowerCase();
+            text = repeatingChars(text);
+            text = text.replaceAll("i̇", "i");
+
+            text = text.replaceAll("\\S*\\d\\S*", "").trim();
+            text = text.replaceAll("’", ""); //replace 15.5 with 1
+            text = text.replaceAll("\'", ""); //replace 15.5 with 1
+//            text = text.replaceAll("\\d.\\d", ""); //replace 15.5 with 1
             text = text.replaceAll("\\.", "\n");
+            text = text.trim();
+//            text = Arrays.toString(text.replaceAll("\\w*\\d\\w* *", "").split(" +"));
             text = text.replaceAll(",", " ");
-            text = text.replaceAll("\\d", " "); //replace all digitis with whitespace
+            text = text.replaceAll("â", "a");
+//            text = text.replaceAll("\\d", " "); //replace all digitis with whitespace
             text = text.replaceAll("\\P{L}+\n", " "); //replace all non word chars
             text = text.replaceAll("[^\\n^\\p{L}\\p{Nd}]+", " "); //replace all non word chars
             text = text.replaceAll(" +", " "); //replace multiple whitespaces with only one
             text = text.replaceAll("\n", " . \n");
+//            text = text.replaceAll("\\.", " . ");
+//                text = text.replaceAll("\\.", ".\n");
+
             return text;
         } catch (Exception e) {
             e.printStackTrace();
@@ -80,23 +89,22 @@ public class TextCleaner {
             if (text.startsWith("__label__pozitif")) {
                 label = "__label__pozitif";
                 text = text.substring(17);
-            }
-            else if (text.startsWith("__label__negatif")) {
-                    label = "__label__pozitif";
-                    text = text.substring(17);
+            } else if (text.startsWith("__label__negatif")) {
+                label = "__label__pozitif";
+                text = text.substring(17);
 
-                    text = text.trim();
-                    text = text.replaceAll("\\d.\\d", ""); //replace 15.5 with 1
+                text = text.trim();
+                text = text.replaceAll("\\d.\\d", ""); //replace 15.5 with 1
 //            text = text.replaceAll("\\.", "\n");
-                    text = text.replaceAll(",", " ");
-                    text = text.replaceAll("\\d", " "); //replace all digitis with whitespace
-                    text = text.replaceAll("\\P{L}+\n", " "); //replace all non word chars
-                    text = text.replaceAll("[^\\n^\\p{L}\\p{Nd}]+", " "); //replace all non word chars
-                    text = text.replaceAll(" +", " "); //replace multiple whitespaces with only one
+                text = text.replaceAll(",", " ");
+                text = text.replaceAll("\\d", " "); //replace all digitis with whitespace
+                text = text.replaceAll("\\P{L}+\n", " "); //replace all non word chars
+                text = text.replaceAll("[^\\n^\\p{L}\\p{Nd}]+", " "); //replace all non word chars
+                text = text.replaceAll(" +", " "); //replace multiple whitespaces with only one
 //            text = text.replaceAll("\n", " . \n");
                 text = label + " " + text;
-                }
-            
+            }
+
             return text;
         } catch (Exception e) {
             e.printStackTrace();
@@ -104,28 +112,35 @@ public class TextCleaner {
         }
     }
 
-    public void cleanFolder(String inputFolder, String outputFolder) {
+    public void cleanFolder(String inputFolder) {
         try {
-            File f1 = new File(outputFolder);
-            if (!f1.exists()) {
-                f1.mkdirs();
-            }
+//            File f1 = new File(outputFolder);
+//            if (!f1.exists()) {
+//                f1.mkdirs();
+//            }
 
             File f = new File(inputFolder);
             if (f.isDirectory()) {
                 File[] files = f.listFiles();
                 for (File file : files) {
-                    cleanFile(file, outputFolder);
+                    cleanFile(file);
                 }
             }
         } catch (Exception e) {
         }
     }
 
-    public void cleanFile(File inputFile, String outputPath) {
+    public void cleanFile(File inputFile) {
         try {
             String filename = inputFile.getName();
-            FileWriter fw = new FileWriter(outputPath + "/" + filename);
+            String path = inputFile.getParent();
+            System.out.println("path = " + path);
+
+            String outputPath = path + "/" + filename + "_clean.txt";
+            System.out.println("outputPath = " + outputPath);
+            String outputPath_tr = path + "/" + filename + "_clean_tr.txt";
+            FileWriter fw = new FileWriter(outputPath);
+            FileWriter fw_tr = new FileWriter(outputPath_tr);
 
             File f = new File(outputPath);
             if (!f.exists()) {
@@ -134,11 +149,14 @@ public class TextCleaner {
 
             Scanner s = new Scanner(inputFile);
             while (s.hasNext()) {
-                String line = s.nextLine();
-                
-                String text = word2vecCleaner(line);
+                String line = s.nextLine().toLowerCase();
+                String text = repeatingChars(line);
+
+                text = word2vecCleaner(text);
+                fw_tr.write(text + "\n");
+                fw_tr.flush();
+
                 text = cleanTurkishChars(text);
-                text = repeatingChars(text);
 //                System.out.println(text);
                 fw.write(text + "\n");
                 fw.flush();
@@ -212,7 +230,7 @@ public class TextCleaner {
             String regex = "([a-z\\d])\\1\\1";
             String regex1 = ".*([a-z])\\1{2,}.*";
 
-            Pattern p = Pattern.compile(regex);
+            Pattern p = Pattern.compile(regex1);
             Matcher m = p.matcher(word);
 
             if (m.find()) {
@@ -290,9 +308,9 @@ public class TextCleaner {
     }
 
     public static void main(String[] args) {
-        String a = "!#^%&/()=*?-_;.,:<>£$½§{[]} Lenovo... { [] Windows 10 işletim sistemiyle çalışan dünyanın en ince dönüştürülebilir Intel Core i7 işlemcili."
-                + "15.5 saate kadar pil ömrü sunan dizüstü bilgisayarı Yoga 910 ile 2K ekranlı."
-                + "18 saate kadar pil ömrü sunan. Android Tab 3 Plus modelleri ile tüm dünyayı bir kez daha şaşırttı."
+        String a = "i̇2015den 15.5cişı ğü6 3uncu i̇kkkk i̇stanbul 10'ncşğüı 3.cu i’n Lenovo'... { [] Windows'10 i'şletim. sistemiyle çalışan dünyanın en ince dönüştürülebilir Intel Core i7 işlemcili."
+                + "15.5 saate kadar pil ömrü sunan dizüstü bilgisayarı Yoga910 ile 2K ekranlı. 18"
+                + " saate kadar pil ömrü sunan. Android Tab 3 Plus modelleri ile tüm dünyayı bir kez daha şaşırttı."
                 + "Dünya’nın 1 numaralı PC. üreticisi Lenovo, Tüketici Elektroniği Fuarı IFA’da."
                 + " Türkiye’de de satışa. sunulacak. müşteri geri dönüşlerine göre geliştirilmiş olan yeni PC ve tablet modellerini tanıttı."
                 + "Her yeni ürününe son. teknolojiyi. katan Lenovo, ThinkPad’lerde görmeye alışık olduğumuz."
@@ -307,18 +325,25 @@ public class TextCleaner {
                 + "Dizüstü, stant, çadır ve tablet modu.";
         String test = "!#^%&/()=*?-_;.,:<>£$½§{[]}";
 
-//        test = test.replaceAll("\\W", ""); 
-//        TextCleaner.word2vecCleaner(a);
-        TextCleaner t = new TextCleaner();
+        
+
+        TextCleaner t = new TextCleaner();        
+        String ret = t.word2vecCleaner(a);
+        System.out.println("t = " + ret);
+        
+//        t.cleanFile(new File("/Users/galip/dev/data/news/star/yazarlar/ahmet_kekec.txt"));
+//        if (args.length < 1) {
+//            System.out.println("Input File Name Missing");
+//        } else {
+//            t.cleanFile(new File(args[0]));
+//        }
 //        t.cleanFile(new File("/Users/galip/NetBeansProjects/dl4j-examples/dl4j-examples/src/main/resources/dunya/dunya.txt"),
 //                "/Users/galip/NetBeansProjects/dl4j-examples/dl4j-examples/src/main/resources/dunya/clean");
-        
-t.cleanFolder("/Users/galip/NetBeansProjects/dl4j-examples/dl4j-examples/src/main/resources/author2vec/unlabeled", 
-        "/Users/galip/NetBeansProjects/dl4j-examples/dl4j-examples/src/main/resources/author2vec/unlabeled/clean");
+//t.cleanFolder("/Users/galip/NetBeansProjects/dl4j-examples/dl4j-examples/src/main/resources/author2vec/unlabeled", 
+//        "/Users/galip/NetBeansProjects/dl4j-examples/dl4j-examples/src/main/resources/author2vec/unlabeled/clean");
 //      String b =   t.word2vecCleaner(a);
 //        System.out.println(b);
 //        t.fasTextCleanFile(new File("/Users/galip/dev/data/beyazperde/fasttext/uclabel.test"), "/Users/galip/dev/data/beyazperde/fasttext/clean");
-
 //        t.cleanFolder("/Users/galip/dev/data/beyazperde/comments", "/Users/galip/dev/data/beyazperde/comments/clean");
 //        t.wordCountFiles(new File("/Users/galip/dev/data/sozluk/sozluk/tek_unique.txt"),
 //                "/Users/galip/dev/data/sozluk/sozluk/");

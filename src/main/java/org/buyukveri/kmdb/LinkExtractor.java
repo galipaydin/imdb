@@ -18,7 +18,7 @@ public class LinkExtractor {
                 file.mkdirs();
             }
 
-            for (int i = 1; i < 202837; i++) {
+            for (int i = 53; i < 202837; i++) {
 
                 String digit = i + "";
                 int length = digit.length();
@@ -29,22 +29,27 @@ public class LinkExtractor {
                 String url = "http://www.kmdb.or.kr/eng/vod/mm_basic.asp?person_id=" + no + digit + "&div=2";
 
                 Document doc = WebPageDownloader.getPage(url);
-                Element e = doc.getElementsByAttributeValue("class", "photo").first();
-                Element imgel = e.getElementsByTag("img").first();
-                String imglink = imgel.attr("src");
-                String name = imgel.attr("alt");
-                name = name.toLowerCase().replaceAll(" ", "_");
-                System.out.println("name = " + name);
-                if (!imglink.endsWith("no_image2.gif")) {
-                    System.out.println("imglink = " + imglink);
-                    fw.write(i + ";" + name + ";" + imglink + "\n");
-                    fw.flush();
+
+                if (doc.getElementsByAttributeValue("class", "photo").size() > 0) {
+                    Element e = doc.getElementsByAttributeValue("class", "photo").first();
+
+                    Element imgel = e.getElementsByTag("img").first();
+                    String imglink = imgel.attr("src");
+                    String name = imgel.attr("alt");
+                    name = name.toLowerCase().replaceAll(" ", "_");
+                    System.out.println("name = " + name);
+                    if (!imglink.endsWith("no_image2.gif")) {
+                        System.out.println("imglink = " + imglink);
+                        fw.write(i + ";" + name + ";" + imglink + "\n");
+                        fw.flush();
+                    }
                 }
             }
 
             fw.close();
 
         } catch (Exception e) {
+            e.printStackTrace();
             System.out.println(e.getMessage());
             e.printStackTrace();
         }
